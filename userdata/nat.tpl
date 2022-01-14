@@ -20,8 +20,8 @@ sudo sysctl -w net.core.somaxconn=65535
 sudo sysctl -w net.core.netdev_max_backlog=16384
 sudo sysctl -w net.core.rmem_max=16777216
 sudo sysctl -w net.core.wmem_max=16777216
-sudo sysctl -w net.ipv4.udp_rmem_min = 8192
-sudo sysctl -w net.ipv4.udp_wmem_min = 8192
+sudo sysctl -w net.ipv4.udp_rmem_min=4096
+sudo sysctl -w net.ipv4.udp_wmem_min=4096
 sudo sysctl -w net.ipv4.udp_rmem="4096 87380 16777216"
 sudo sysctl -w net.ipv4.udp_mem="4096 65536 16777216"
 
