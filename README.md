@@ -43,6 +43,7 @@ module "subnets" {
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 3.62.0 |
 | <a name="requirement_cloudinit"></a> [cloudinit](#requirement\_cloudinit) | >= 2.2.0 |
 | <a name="requirement_null"></a> [null](#requirement\_null) | >= 2.0 |
+| <a name="requirement_time"></a> [time](#requirement\_time) | >= 0.7.0 |
 ## Providers
 
 | Name | Version |
@@ -50,6 +51,7 @@ module "subnets" {
 | <a name="provider_aws"></a> [aws](#provider\_aws) | >= 3.62.0 |
 | <a name="provider_cloudinit"></a> [cloudinit](#provider\_cloudinit) | >= 2.2.0 |
 | <a name="provider_null"></a> [null](#provider\_null) | >= 2.0 |
+| <a name="provider_time"></a> [time](#provider\_time) | >= 0.7.0 |
 ## Modules
 
 | Name | Source | Version |
@@ -86,6 +88,7 @@ module "subnets" {
 | [aws_subnet.private](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/subnet) | resource |
 | [aws_subnet.public](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/subnet) | resource |
 | [null_resource.nat_instance](https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource) | resource |
+| [time_sleep.nat_instance_metadata](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/sleep) | resource |
 | [aws_ami.nat_instance](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ami) | data source |
 | [aws_availability_zones.available](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/availability_zones) | data source |
 | [aws_caller_identity.default](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
@@ -124,13 +127,12 @@ module "subnets" {
 | <a name="input_metadata_http_tokens_required"></a> [metadata\_http\_tokens\_required](#input\_metadata\_http\_tokens\_required) | Whether or not the metadata service requires session tokens, also referred to as Instance Metadata Service Version 2. | `bool` | `true` | no |
 | <a name="input_name"></a> [name](#input\_name) | ID element. Usually the component or solution name, e.g. 'app' or 'jenkins'.<br>This is the only ID element not also included as a `tag`.<br>The "name" tag is set to the full `id` string. There is no tag with the value of the `name` input. | `string` | `null` | no |
 | <a name="input_namespace"></a> [namespace](#input\_namespace) | ID element. Usually an abbreviation of your organization name, e.g. 'eg' or 'cp', to help ensure generated IDs are globally unique | `string` | `null` | no |
-| <a name="input_nat_elastic_ips"></a> [nat\_elastic\_ips](#input\_nat\_elastic\_ips) | Existing Elastic IPs to attach to the NAT Gateway(s) or Instance(s) instead of creating new ones. | `list(string)` | `[]` | no |
 | <a name="input_nat_gateway_enabled"></a> [nat\_gateway\_enabled](#input\_nat\_gateway\_enabled) | Flag to enable/disable NAT Gateways to allow servers in the private subnets to access the Internet | `bool` | `true` | no |
 | <a name="input_nat_instance_ami_architecture"></a> [nat\_instance\_ami\_architecture](#input\_nat\_instance\_ami\_architecture) | NAT Instance AMI architecture | `string` | `"arm64"` | no |
 | <a name="input_nat_instance_ami_lock"></a> [nat\_instance\_ami\_lock](#input\_nat\_instance\_ami\_lock) | Whether to lock NAT Instance AMI vesrion | `bool` | `true` | no |
 | <a name="input_nat_instance_cloudwatch_metric_alarm"></a> [nat\_instance\_cloudwatch\_metric\_alarm](#input\_nat\_instance\_cloudwatch\_metric\_alarm) | NAT Instance CloudWatch Metric Alarm resource config | <pre>object({<br>    comparison_operator = string<br>    evaluation_periods  = number<br>    metric_name         = string<br>    namespace           = string<br>    period              = number<br>    statistic           = string<br>    threshold           = number<br>    action              = string<br>  })</pre> | <pre>{<br>  "action": "action/actions/AWS_EC2.InstanceId.Reboot/1.0",<br>  "comparison_operator": "GreaterThanOrEqualToThreshold",<br>  "evaluation_periods": 5,<br>  "metric_name": "StatusCheckFailed_Instance",<br>  "namespace": "AWS/EC2",<br>  "period": 60,<br>  "statistic": "Maximum",<br>  "threshold": 1<br>}</pre> | no |
+| <a name="input_nat_instance_eips"></a> [nat\_instance\_eips](#input\_nat\_instance\_eips) | Existing Elastic IPs to attach to the NAT Gateway(s) or Instance(s) instead of creating new ones. | `list(string)` | `[]` | no |
 | <a name="input_nat_instance_enabled"></a> [nat\_instance\_enabled](#input\_nat\_instance\_enabled) | Flag to enable/disable NAT Instances to allow servers in the private subnets to access the Internet | `bool` | `false` | no |
-| <a name="input_nat_instance_ssh_key_pair"></a> [nat\_instance\_ssh\_key\_pair](#input\_nat\_instance\_ssh\_key\_pair) | SSH key pair to be provisioned on the NAT Instance | `string` | `null` | no |
 | <a name="input_nat_instance_type"></a> [nat\_instance\_type](#input\_nat\_instance\_type) | NAT Instance type | `string` | `"t4g.micro"` | no |
 | <a name="input_private_network_acl_id"></a> [private\_network\_acl\_id](#input\_private\_network\_acl\_id) | Network ACL ID that will be added to private subnets. If empty, a new ACL will be created | `string` | `""` | no |
 | <a name="input_private_subnets_additional_tags"></a> [private\_subnets\_additional\_tags](#input\_private\_subnets\_additional\_tags) | Additional tags to be added to private subnets | `map(string)` | `{}` | no |

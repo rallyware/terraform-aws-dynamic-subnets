@@ -94,13 +94,7 @@ variable "nat_instance_ami_lock" {
   default     = true
 }
 
-variable "nat_instance_ssh_key_pair" {
-  type        = string
-  description = "SSH key pair to be provisioned on the NAT Instance"
-  default     = null
-}
-
-variable "nat_elastic_ips" {
+variable "nat_instance_eips" {
   type        = list(string)
   default     = []
   description = "Existing Elastic IPs to attach to the NAT Gateway(s) or Instance(s) instead of creating new ones."
