@@ -1,3 +1,17 @@
+locals {
+  availability_zones_count = local.enabled ? length(var.availability_zones) : 0
+  enabled                  = module.this.enabled
+  enabled_count            = local.enabled ? 1 : 0
+  delimiter                = module.this.delimiter
+  use_existing_eips        = length(var.nat_instance_eips) > 0
+  map_map = {
+    short = "to_short"
+    fixed = "to_fixed"
+    full  = "identity"
+  }
+  az_map = module.utils.region_az_alt_code_maps[local.map_map[var.availability_zone_attribute_style]]
+}
+
 # Get object aws_vpc by vpc_id
 data "aws_vpc" "default" {
   count = local.enabled ? 1 : 0
@@ -20,26 +34,9 @@ data "aws_partition" "default" {
   count = local.nat_instance_enabled ? 1 : 0
 }
 
-locals {
-  availability_zones_count = local.enabled ? length(var.availability_zones) : 0
-  enabled                  = module.this.enabled
-  enabled_count            = local.enabled ? 1 : 0
-  delimiter                = module.this.delimiter
-}
-
 data "aws_eip" "nat_ips" {
-  count     = local.enabled ? length(var.nat_elastic_ips) : 0
-  public_ip = element(var.nat_elastic_ips, count.index)
-}
-
-locals {
-  use_existing_eips = length(var.nat_elastic_ips) > 0
-  map_map = {
-    short = "to_short"
-    fixed = "to_fixed"
-    full  = "identity"
-  }
-  az_map = module.utils.region_az_alt_code_maps[local.map_map[var.availability_zone_attribute_style]]
+  count     = local.enabled ? length(var.nat_instance_eips) : 0
+  public_ip = element(var.nat_instance_eips, count.index)
 }
 
 module "utils" {

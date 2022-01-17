@@ -2,6 +2,7 @@
 exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
 
 sudo yum install iptables-services -y
+sudo /sbin/iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
 
 sudo sysctl -w net.ipv4.ip_forward=1
 sudo sysctl -w net.ipv4.ip_local_port_range="1024 65000"
@@ -22,10 +23,8 @@ sudo sysctl -w net.core.rmem_max=16777216
 sudo sysctl -w net.core.wmem_max=16777216
 sudo sysctl -w net.ipv4.udp_rmem_min=4096
 sudo sysctl -w net.ipv4.udp_wmem_min=4096
-sudo sysctl -w net.ipv4.udp_rmem="4096 87380 16777216"
-sudo sysctl -w net.ipv4.udp_mem="4096 65536 16777216"
-
-sudo /sbin/iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+sudo sysctl -w net.core.rmem_max=16777216
+sudo sysctl -w net.core.wmem_max=16777216
 
 sudo service iptables save
 sudo systemctl enable iptables

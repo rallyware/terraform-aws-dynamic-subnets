@@ -14,5 +14,9 @@ terraform {
       source  = "hashicorp/cloudinit"
       version = ">= 2.2.0"
     }
+    time = {
+      source  = "hashicorp/time"
+      version = ">= 0.7.0"
+    }
   }
 }

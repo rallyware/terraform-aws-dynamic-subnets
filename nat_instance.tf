@@ -1,12 +1,3 @@
-module "nat_instance_label" {
-  source  = "cloudposse/label/null"
-  version = "0.25.0"
-
-  attributes = ["nat", "instance"]
-
-  context = module.this.context
-}
-
 locals {
   cidr_block               = var.cidr_block != "" ? var.cidr_block : one(data.aws_vpc.default[*].cidr_block)
   nat_instance_enabled     = local.enabled && var.nat_instance_enabled
@@ -14,6 +5,15 @@ locals {
   nat_instance_eip_count   = local.use_existing_eips ? 0 : local.nat_instance_count
   nat_instance_ami         = local.nat_instance_enabled && var.nat_instance_ami_lock ? one(null_resource.nat_instance[*].triggers["ami"]) : one(data.aws_ami.nat_instance[*].id)
   instance_eip_allocations = local.use_existing_eips ? data.aws_eip.nat_ips.*.id : aws_eip.nat_instance.*.id
+}
+
+module "nat_instance_label" {
+  source  = "cloudposse/label/null"
+  version = "0.25.0"
+
+  attributes = ["nat", "instance"]
+
+  context = module.this.context
 }
 
 data "cloudinit_config" "nat_instance" {
@@ -104,7 +104,6 @@ resource "aws_instance" "nat_instance" {
   ami                    = local.nat_instance_ami
   user_data_base64       = one(data.cloudinit_config.nat_instance[*].rendered)
   instance_type          = var.nat_instance_type
-  key_name               = var.nat_instance_ssh_key_pair
   subnet_id              = element(aws_subnet.public.*.id, count.index)
   vpc_security_group_ids = [aws_security_group.nat_instance[0].id]
 
@@ -159,12 +158,27 @@ resource "aws_eip_association" "nat_instance" {
   allocation_id = element(local.instance_eip_allocations, count.index)
 }
 
+# wait untill nat-instances become up
+resource "time_sleep" "nat_instance_metadata" {
+  count = local.nat_instance_count
+
+  create_duration = "180s"
+
+  triggers = {
+    instance_id = element(aws_instance.nat_instance.*.id, count.index)
+  }
+}
+
 resource "aws_route" "nat_instance" {
   count                  = local.nat_instance_count
   route_table_id         = element(aws_route_table.private.*.id, count.index)
-  instance_id            = element(aws_instance.nat_instance.*.id, count.index)
+  instance_id            = element(time_sleep.nat_instance_metadata[*].triggers["instance_id"], count.index)
   destination_cidr_block = "0.0.0.0/0"
-  depends_on             = [aws_route_table.private]
+
+  depends_on = [
+    aws_route_table.private,
+    aws_eip_association.nat_instance
+  ]
 
   timeouts {
     create = var.aws_route_create_timeout
