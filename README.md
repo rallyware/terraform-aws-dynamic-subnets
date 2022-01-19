@@ -2,7 +2,7 @@
 
 Terraform module to provision public and private [`subnets`](http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_Subnets.html) in an existing [`VPC`](https://aws.amazon.com/vpc)
 
-__NOTE:__ This module is a hard fork of [CloudPosse's](https://github.com/cloudposse/terraform-aws-dynamic-subnets) terraform module
+__NOTE:__ This module is a hard fork of [CloudPosse's terraform module](https://github.com/cloudposse/terraform-aws-dynamic-subnets)
 
 <!-- BEGIN_TF_DOCS -->
 ## Usage
