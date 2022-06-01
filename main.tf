@@ -41,5 +41,5 @@ data "aws_eip" "nat_ips" {
 
 module "utils" {
   source  = "cloudposse/utils/aws"
-  version = "0.8.1"
+  version = "1.0.0"
 }
