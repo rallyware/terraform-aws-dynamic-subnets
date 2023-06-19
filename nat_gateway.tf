@@ -9,8 +9,7 @@ module "nat_label" {
 
 locals {
   nat_gateway_eip_count   = local.use_existing_eips ? 0 : local.nat_gateways_count
-  gateway_eip_allocations = local.use_existing_eips ? data.aws_eip.nat_ips.*.id : aws_eip.default.*.id
-  eips_allocations        = local.use_existing_eips ? data.aws_eip.nat_ips.*.id : aws_eip.default.*.id
+  gateway_eip_allocations = local.use_existing_eips ? data.aws_eip.nat_ips[*].id : aws_eip.default[*].id
   nat_gateways_count      = var.nat_gateway_enabled ? length(var.availability_zones) : 0
 }
 
@@ -33,7 +32,7 @@ resource "aws_eip" "default" {
 resource "aws_nat_gateway" "default" {
   count         = local.enabled ? local.nat_gateways_count : 0
   allocation_id = element(local.gateway_eip_allocations, count.index)
-  subnet_id     = element(aws_subnet.public.*.id, count.index)
+  subnet_id     = element(aws_subnet.public[*].id, count.index)
 
   tags = merge(
     module.nat_label.tags,
@@ -49,8 +48,8 @@ resource "aws_nat_gateway" "default" {
 
 resource "aws_route" "default" {
   count                  = local.enabled ? local.nat_gateways_count : 0
-  route_table_id         = element(aws_route_table.private.*.id, count.index)
-  nat_gateway_id         = element(aws_nat_gateway.default.*.id, count.index)
+  route_table_id         = element(aws_route_table.private[*].id, count.index)
+  nat_gateway_id         = element(aws_nat_gateway.default[*].id, count.index)
   destination_cidr_block = "0.0.0.0/0"
   depends_on             = [aws_route_table.private]
 

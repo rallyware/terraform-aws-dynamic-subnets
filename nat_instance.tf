@@ -4,7 +4,7 @@ locals {
   nat_instance_count       = local.nat_instance_enabled ? length(var.availability_zones) : 0
   nat_instance_eip_count   = local.use_existing_eips ? 0 : local.nat_instance_count
   nat_instance_ami         = local.nat_instance_enabled && var.nat_instance_ami_lock ? one(null_resource.nat_instance[*].triggers["ami"]) : one(data.aws_ami.nat_instance[*].id)
-  instance_eip_allocations = local.use_existing_eips ? data.aws_eip.nat_ips.*.id : aws_eip.nat_instance.*.id
+  instance_eip_allocations = local.use_existing_eips ? data.aws_eip.nat_ips[*].id : aws_eip.nat_instance[*].id
 }
 
 module "nat_instance_label" {
@@ -43,7 +43,7 @@ resource "aws_security_group_rule" "nat_instance_egress" {
   from_port         = 0
   to_port           = 0
   protocol          = "-1"
-  cidr_blocks       = ["0.0.0.0/0"] #tfsec:ignore:AWS007
+  cidr_blocks       = ["0.0.0.0/0"] #tfsec:ignore:aws-ec2-no-public-egress-sgr
   security_group_id = one(aws_security_group.nat_instance[*].id)
   type              = "egress"
 }
@@ -104,7 +104,7 @@ resource "aws_instance" "nat_instance" {
   ami                    = local.nat_instance_ami
   user_data_base64       = one(data.cloudinit_config.nat_instance[*].rendered)
   instance_type          = var.nat_instance_type
-  subnet_id              = element(aws_subnet.public.*.id, count.index)
+  subnet_id              = element(aws_subnet.public[*].id, count.index)
   vpc_security_group_ids = [aws_security_group.nat_instance[0].id]
 
   tags = merge(
@@ -120,7 +120,7 @@ resource "aws_instance" "nat_instance" {
 
   #bridgecrew:skip=BC_AWS_PUBLIC_12: Skipping `EC2 Should Not Have Public IPs` check. NAT instance requires public IP.
   #bridgecrew:skip=BC_AWS_GENERAL_31: Skipping `Ensure Instance Metadata Service Version 1 is not enabled` check until BridgeCrew support condition evaluation. See https://github.com/bridgecrewio/checkov/issues/793
-  associate_public_ip_address = true #tfsec:ignore:AWS012
+  associate_public_ip_address = true
 
   lifecycle {
     create_before_destroy = true
@@ -154,7 +154,7 @@ resource "aws_eip" "nat_instance" {
 
 resource "aws_eip_association" "nat_instance" {
   count         = local.nat_instance_count
-  instance_id   = element(aws_instance.nat_instance.*.id, count.index)
+  instance_id   = element(aws_instance.nat_instance[*].id, count.index)
   allocation_id = element(local.instance_eip_allocations, count.index)
 }
 
@@ -165,14 +165,14 @@ resource "time_sleep" "nat_instance_metadata" {
   create_duration = "180s"
 
   triggers = {
-    instance_id = element(aws_instance.nat_instance.*.id, count.index)
+    primary_network_interface_id = element(aws_instance.nat_instance[*].primary_network_interface_id, count.index)
   }
 }
 
 resource "aws_route" "nat_instance" {
   count                  = local.nat_instance_count
-  route_table_id         = element(aws_route_table.private.*.id, count.index)
-  instance_id            = element(time_sleep.nat_instance_metadata[*].triggers["instance_id"], count.index)
+  route_table_id         = element(aws_route_table.private[*].id, count.index)
+  network_interface_id   = element(time_sleep.nat_instance_metadata[*].triggers["primary_network_interface_id"], count.index)
   destination_cidr_block = "0.0.0.0/0"
 
   depends_on = [
@@ -198,7 +198,7 @@ resource "aws_cloudwatch_metric_alarm" "default" {
   threshold           = var.nat_instance_cloudwatch_metric_alarm["threshold"]
 
   dimensions = {
-    InstanceId = element(aws_instance.nat_instance.*.id, count.index)
+    InstanceId = element(aws_instance.nat_instance[*].id, count.index)
   }
 
   alarm_actions = [
