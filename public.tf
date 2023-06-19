@@ -28,7 +28,7 @@ resource "aws_subnet" "public" {
     local.public_subnet_count + count.index
   )
 
-  map_public_ip_on_launch = var.map_public_ip_on_launch
+  map_public_ip_on_launch = var.map_public_ip_on_launch # tfsec:ignore:aws-ec2-no-public-ip-subnet
 
   tags = merge(
     module.public_label.tags,

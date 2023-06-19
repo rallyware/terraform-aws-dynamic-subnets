@@ -43,7 +43,7 @@ resource "aws_security_group_rule" "nat_instance_egress" {
   from_port         = 0
   to_port           = 0
   protocol          = "-1"
-  cidr_blocks       = ["0.0.0.0/0"] #tfsec:ignore:AWS007
+  cidr_blocks       = ["0.0.0.0/0"] #tfsec:ignore:aws-ec2-no-public-egress-sgr
   security_group_id = one(aws_security_group.nat_instance[*].id)
   type              = "egress"
 }
@@ -120,7 +120,7 @@ resource "aws_instance" "nat_instance" {
 
   #bridgecrew:skip=BC_AWS_PUBLIC_12: Skipping `EC2 Should Not Have Public IPs` check. NAT instance requires public IP.
   #bridgecrew:skip=BC_AWS_GENERAL_31: Skipping `Ensure Instance Metadata Service Version 1 is not enabled` check until BridgeCrew support condition evaluation. See https://github.com/bridgecrewio/checkov/issues/793
-  associate_public_ip_address = true #tfsec:ignore:AWS012
+  associate_public_ip_address = true
 
   lifecycle {
     create_before_destroy = true
