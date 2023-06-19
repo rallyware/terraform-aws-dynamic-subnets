@@ -40,7 +40,7 @@ output "nat_gateway_public_ips" {
 
 output "nat_instance_ids" {
   description = "IDs of the NAT Instances created"
-  value       = time_sleep.nat_instance_metadata[*].triggers["instance_id"]
+  value       = aws_instance.nat_instance[*].id
 }
 
 output "nat_instance_public_ips" {
