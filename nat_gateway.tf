@@ -15,7 +15,6 @@ locals {
 
 resource "aws_eip" "default" {
   count = local.enabled ? local.nat_gateway_eip_count : 0
-  vpc   = true
 
   tags = merge(
     module.private_label.tags,
