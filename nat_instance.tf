@@ -139,7 +139,7 @@ resource "aws_instance" "nat_instance" {
 
 resource "aws_eip" "nat_instance" {
   count = local.nat_instance_enabled ? local.nat_instance_eip_count : 0
-  vpc   = true
+
   tags = merge(
     module.nat_instance_label.tags,
     {
